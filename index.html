@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NCRB "India Metro Arrests" 2020</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Slide-out Sidebar Overlay -->
+  <div id="sidebarBackdrop" class="backdrop"></div>
+
+  <!-- Collapsible Demographic Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h2>Demographic Controls</h2>
+      <button id="closeSidebarBtn" class="icon-btn" aria-label="Close Sidebar">&times;</button>
+    </div>
+
+    <div class="sidebar-content">
+      <!-- Gender Selector -->
+      <div class="control-group">
+        <label for="genderSelect">Gender</label>
+        <div class="select-wrapper">
+          <select id="genderSelect">
+            <option value="all">All (Male & Female)</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Age Cohort Selector -->
+      <div class="control-group">
+        <label for="ageSelect">Age Bracket</label>
+        <div class="select-wrapper">
+          <select id="ageSelect">
+            <option value="all">All Age Groups</option>
+            <option value="juv">Juveniles (&lt; 18 yrs)</option>
+            <option value="18_30">18 &ndash; 30 yrs</option>
+            <option value="30_45">30 &ndash; 45 yrs</option>
+            <option value="45_60">45 &ndash; 60 yrs</option>
+            <option value="60_above">60 yrs &amp; Above</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- City Search & Multi-select -->
+      <div class="control-group">
+        <label for="citySearch">Metropolitan Cities</label>
+        <div class="search-input-wrapper">
+          <input type="text" id="citySearch" placeholder="Search cities...">
+          <span class="search-icon">&#128269;</span>
+        </div>
+
+        <div class="city-action-links">
+          <button type="button" id="selectAllCities">Select All</button>
+          <span>|</span>
+          <button type="button" id="clearAllCities">Clear All</button>
+        </div>
+
+        <div id="cityCheckboxList" class="checkbox-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <div class="sidebar-stats">
+        <div class="stat-row">
+          <span>Active Jurisdictions:</span>
+          <strong id="activeCitiesCount">19 / 19</strong>
+        </div>
+        <div class="stat-row">
+          <span>Recorded Arrests:</span>
+          <strong id="activeArrestsCount">687,289</strong>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div class="layout-wrapper">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="openSidebarBtn" class="menu-btn" aria-label="Open Demographic Controls">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span id="activeBadge" class="badge">19</span>
+        </button>
+        <div class="header-titles">
+          <h1 class="main-title">NCRB &ldquo;India Metro Arrests&rdquo; 2020</h1>
+          <p class="subtitle">Persons Arrested under IPC Crimes Across 19 Metropolitan Cities</p>
+        </div>
+      </div>
+
+      <div class="tab-toggle-group" role="tablist">
+        <button id="viewVisualTab" class="tab-btn active" role="tab" aria-selected="true">Visual</button>
+        <button id="viewRawTab" class="tab-btn" role="tab" aria-selected="false">Raw</button>
+      </div>
+    </header>
+
+    <!-- Visual Dashboard Section -->
+    <main id="visualSection" class="content-view">
+      <div class="dashboard-grid">
+        <!-- Main Left: Age-Gender Funnel Pyramid (2/3 width) -->
+        <section class="chart-card left-panel">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Age &amp; Gender Distribution Pyramid</h2>
+              <p class="card-subtitle">&larr; Male &bull; Female &rarr; grouped upward by Age Cohort (&uarr;)</p>
+            </div>
+            <span id="pyramidSelectionLabel" class="tag">All Selected Cities</span>
+          </div>
+          <p id="pyramidAlt" class="sr-only"></p>
+          <div class="chart-container large-chart">
+            <canvas id="ageGenderPyramidChart" role="img" aria-labelledby="pyramidAlt"></canvas>
+          </div>
+        </section>
+
+        <!-- Right Column: Outliers & City Distribution (1/3 width) -->
+        <div class="right-panel">
+          <!-- Outliers Scatter Plot -->
+          <section class="chart-card">
+            <div class="card-header">
+              <div>
+                <h2 id="scatterTitle" class="card-title">Volume vs. Share</h2>
+                <p id="scatterSubtitle" class="card-subtitle"></p>
+              </div>
+            </div>
+            <p id="scatterAlt" class="sr-only"></p>
+            <div class="chart-container compact-chart" style="height:320px">
+              <canvas id="outliersScatterChart" role="img" aria-labelledby="scatterAlt"></canvas>
+            </div>
+          </section>
+
+          <!-- Reporting check -->
+          <section class="chart-card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Reporting Check: Zero &amp; Very Low Counts</h2>
+                <p class="card-subtitle">&#9873; 0 = zero recorded &middot; &#9661; = 1&ndash;9 recorded. Verify before acting.</p>
+              </div>
+            </div>
+            <div class="integrity-wrap">
+              <table class="integrity-table">
+                <caption class="sr-only">Cities with zero or very low recorded arrests in small demographic groups</caption>
+                <thead><tr><th scope="col">City</th><th scope="col">Juv. girls</th><th scope="col">Juveniles</th><th scope="col">60+</th></tr></thead>
+                <tbody id="integrityBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Three Required DESG 317 Panels -->
+      <section class="mandatory-panels-grid">
+        <article class="panel-box">
+          <div class="panel-tag">Panel 1</div>
+          <h3 class="panel-title">How to read this</h3>
+          <p>Each bar or dot is one of 19 large Indian cities; the data counts people arrested in 2020 by age group and sex.</p>
+          <p><strong>Counts vs. shares.</strong> A count is the number of arrests. A share is a group&rsquo;s part of that city&rsquo;s own arrests. Counts show where the volume is; shares show where a group is over-represented, so a small city can rank low on counts but high on shares.</p>
+          <p><strong>Using the views.</strong> Open the controls (&#9776;) to choose an age bracket, gender and cities. The pyramid shows counts (men left, women right). In the scatter plot, read height against the dashed 19-city average; cities far above or below it are worth a closer look, and diamond points mark a count of zero. The table lists zero or very low counts.</p>
+        </article>
+
+        <article class="panel-box">
+          <div class="panel-tag">Panel 2</div>
+          <h3 class="panel-title">What this doesn&rsquo;t show</h3>
+          <ul>
+            <li><strong>Arrests are not crimes.</strong> Figures reflect policing and recording practice as well as crime. More arrests does not mean a more dangerous city.</li>
+            <li><strong>No offence type, charge, bail or conviction data.</strong> Serious and minor cases cannot be separated.</li>
+            <li><strong>No population adjustment.</strong> The table has no population figures, so cities of different sizes are not directly comparable.</li>
+            <li><strong>Who is missing.</strong> Anyone not arrested, unreported crime, and all places outside these 19 cities.</li>
+            <li><strong>Possible reporting gaps.</strong> Zero or near-zero cells (e.g. Ghaziabad, Kanpur and Patna record no arrests of people aged 60+) may reflect how data was recorded, not an absence of arrests. Treat flags as questions, not findings.</li>
+            <li><strong>Single year.</strong> 2020 was a COVID-19 year, so patterns may not hold in other years.</li>
+          </ul>
+        </article>
+
+        <article class="panel-box">
+          <div class="panel-tag">Panel 3</div>
+          <h3 class="panel-title">Where this came from</h3>
+          <p><strong>Source:</strong> National Crime Records Bureau (NCRB), Ministry of Home Affairs, <em>Crime in India 2020</em>, Table 19B.2, &ldquo;Age Group and Gender-wise Persons Arrested under IPC Crimes in Metropolitan Cities&rdquo;.</p>
+          <p><strong>Licence:</strong> [state the licence shown on the download page]. <strong>Date accessed:</strong> [DD Month 2026]. <strong>File:</strong> NCRB_CII-2020_Table_No-19B_2.csv.</p>
+          <p><strong>Transformations:</strong> removed the &ldquo;Total Cities&rdquo; row (used only to check that city figures sum to it); renamed the 20 columns; split state from city name; computed shares as group &divide; city total. Script: prepare_data.py; cleaned file: data/ncrb_2020_metro_arrests_clean.csv.</p>
+        </article>
+      </section>
+    </main>
+
+    <!-- Raw Data View Section -->
+    <main id="rawSection" class="content-view hidden">
+      <div class="raw-card">
+        <div class="raw-header">
+          <div>
+            <h2 class="card-title">Tabular Reference (NCRB Table 19B.2)</h2>
+            <p class="card-subtitle">Raw reported figures of persons arrested by sex and age bracket</p>
+          </div>
+          <button id="downloadCsvBtn" class="download-btn">Export CSV</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>City</th>
+                <th>Total</th>
+                <th>Male</th>
+                <th>Female</th>
+                <th>Juv (&lt;18)</th>
+                <th>18&ndash;30</th>
+                <th>30&ndash;45</th>
+                <th>45&ndash;60</th>
+                <th>60+</th>
+              </tr>
+            </thead>
+            <tbody id="rawTableBody">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="code.js"></script>
+</body>
+</html>
